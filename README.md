@@ -84,4 +84,5 @@ Controlled the rover in gazebo using teleop_twist_keyboard.
 
 ## Known Limitations
 - The controller assumes ideal Ackermann steering geometry and does not account for wheel slip or terrain interaction.
-- No feedback from wheel encoders or vehicle odometry is used; the controller operates in open loop.
+- No feedback from wheel encoders used
+- 
