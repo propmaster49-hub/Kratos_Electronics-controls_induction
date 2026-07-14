@@ -44,13 +44,12 @@ class DoubleAckermannController(Node):
         linear_x = msg.linear.x
         angular_z = msg.angular.z
 
-        # Initialize outputs
+        # setting initial values for steering angles and wheel velocities to zero
         fl_angle = fr_angle = rl_angle = rr_angle = 0.0
         fl_vel = fr_vel = rl_vel = rr_vel = 0.0
 
-        # -----------------------------
-        # Straight motion
-        # -----------------------------
+        # linear motion 
+        
         if abs(angular_z) < 1e-6:
 
             wheel_speed = linear_x / self.wheel_radius
@@ -60,12 +59,11 @@ class DoubleAckermannController(Node):
             rl_vel = wheel_speed
             rr_vel = wheel_speed
 
-        # -----------------------------
         # Turning motion
-        # -----------------------------
+        
         else:
 
-            # Turning radius of rover center
+            # Turning radius of instantaneous center of rotation (ICR)
             R = linear_x / angular_z
 
             # Rear wheel turning radii
@@ -99,7 +97,7 @@ class DoubleAckermannController(Node):
                 rl_angle = outer_angle
                 rr_angle = inner_angle
 
-            # Clamp steering
+            # Constrain steering angles to [-pi/2, pi/2] range
             fl_angle = max(-1.57, min(1.57, fl_angle))
             fr_angle = max(-1.57, min(1.57, fr_angle))
             rl_angle = max(-1.57, min(1.57, rl_angle))
@@ -155,7 +153,7 @@ class DoubleAckermannController(Node):
                 rl_vel *= -1
                 rr_vel *= -1
 
-        # Publish steering commands
+        # Publish and print steering commands
         steer_msg = Float64MultiArray()
         steer_msg.data = [
             fl_angle,
@@ -164,8 +162,10 @@ class DoubleAckermannController(Node):
             rr_angle
         ]
         self.steer_pub.publish(steer_msg)
+        self.get_logger().info(
+        f"Steering: {steer_msg.data}")
 
-        # Publish drive commands
+        # Publish and print drive commands
         drive_msg = Float64MultiArray()
         drive_msg.data = [
             fl_vel,
@@ -174,6 +174,8 @@ class DoubleAckermannController(Node):
             rr_vel
         ]
         self.drive_pub.publish(drive_msg)
+        self.get_logger().info(
+        f"Drive: {drive_msg.data}")
 
 def main(args=None):
     rclpy.init(args=args)
